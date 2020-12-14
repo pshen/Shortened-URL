@@ -18,3 +18,6 @@ Write a web application that allows users to take a long URL and convert it to a
 
 - Detect duplicate URLs. Don’t create a new short URL if one already exists.
 - Record the date and time each short URL was accessed, and use a graphing library to graph the requests.
+
+# Example:
+https://bit.ly/381YTZJ will redirect user to this repo
