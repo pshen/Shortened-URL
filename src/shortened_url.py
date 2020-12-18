@@ -6,7 +6,6 @@ import falcon
 import gunicorn.glogging
 import validators
 from falcon_cors import CORS
-from threading import Lock
 
 HTML_PAGE_HEADER = f'''
 <!DOCTYPE html>
@@ -37,28 +36,25 @@ class ShortenedURL:
     id = 1000000
     url2id = {}
     id2url = {}
+    url2id_path = Path('url2id.json')
+    id2url_path = Path('id2url.json')
 
     def __init__(self):
         super().__init__()
-        #self.id = 1000000
-        #self.url2id = {}
-        #self.id2url = {}
         self.logger = gunicorn.glogging.Logger
         # url2id
-        self.url2id_path = Path('url2id.json')
-        if self.url2id_path.exists():
-            self.url2id = json.loads(self.url2id_path.read_text())
-            self.id = self.url2id['id']
+        if ShortenedURL.url2id_path.exists():
+            ShortenedURL.url2id = json.loads(ShortenedURL.url2id_path.read_text())
+            ShortenedURL.id = ShortenedURL.url2id['id']
         # id2url
-        self.id2url_path = Path('id2url.json')
-        if self.id2url_path.exists():
-            self.id2url = json.loads(self.id2url_path.read_text())
+        if ShortenedURL.id2url_path.exists():
+            ShortenedURL.id2url = json.loads(ShortenedURL.id2url_path.read_text())
 
     def sync2disk(self):
         # sync the data to disk -> save
-        self.url2id['id'] = self.id
-        self.url2id_path.write_text(json.dumps(self.url2id))
-        self.id2url_path.write_text(json.dumps(self.id2url))
+        ShortenedURL.url2id['id'] = ShortenedURL.id
+        ShortenedURL.url2id_path.write_text(json.dumps(ShortenedURL.url2id))
+        ShortenedURL.id2url_path.write_text(json.dumps(ShortenedURL.id2url))
 
     def encode(self, id):
         # https://github.com/minsuk-heo/coding_interview/blob/master/shorten_url.ipynb
@@ -78,8 +74,8 @@ class ShortenedURL:
         return "".join(ret[::-1])
 
     def refresh(self):
-        if self.id2url_path.exists():
-            self.id2url = json.loads(self.id2url_path.read_text())
+        if ShortenedURL.id2url_path.exists():
+            ShortenedURL.id2url = json.loads(ShortenedURL.id2url_path.read_text())
 
     def on_get(self, req, resp):
         # https://stackoverflow.com/questions/34821974/how-to-serve-a-static-webpage-from-falcon-application
@@ -94,7 +90,7 @@ class ShortenedURL:
         # add more on_get functions
         self.refresh()
         resp.content_type = 'text/html'
-        if encoded_id not in self.id2url:
+        if encoded_id not in ShortenedURL.id2url:
             # Bad request
             resp.status = falcon.HTTP_400
             resp.body = f'''
@@ -104,9 +100,9 @@ class ShortenedURL:
             '''
         else:
             resp.status = falcon.HTTP_200
-            orig_url = self.id2url[encoded_id]['url']
-            views = self.id2url[encoded_id]['views']
-            accessed_time = self.id2url[encoded_id]['accessed_time']
+            orig_url = ShortenedURL.id2url[encoded_id]['url']
+            views = ShortenedURL.id2url[encoded_id]['views']
+            accessed_time = ShortenedURL.id2url[encoded_id]['accessed_time']
             resp.body = f'''
             {HTML_PAGE_HEADER}
             <p> shortened url : http://localhost:8000/{encoded_id} </p>
@@ -118,7 +114,7 @@ class ShortenedURL:
 
     def on_get_redirect(self, req, resp, encoded_id):
         self.refresh()
-        if encoded_id not in self.id2url:
+        if encoded_id not in ShortenedURL.id2url:
             # Bad request
             resp.status = falcon.HTTP_400
             resp.content_type = 'text/html'
@@ -128,11 +124,11 @@ class ShortenedURL:
             {HTML_PAGE_FOOTER}
             '''
         else:
-            self.id2url[encoded_id]['views'] += 1
-            self.id2url[encoded_id]['accessed_time'] = datetime.now().isoformat()
+            ShortenedURL.id2url[encoded_id]['views'] += 1
+            ShortenedURL.id2url[encoded_id]['accessed_time'] = datetime.now().isoformat()
             # write the change to disk
             self.sync2disk()
-            raise falcon.HTTPMovedPermanently(self.id2url[encoded_id]['url'])
+            raise falcon.HTTPMovedPermanently(ShortenedURL.id2url[encoded_id]['url'])
 
     def on_post(self, req, resp):
         orig_url = req.params['url']
@@ -148,14 +144,14 @@ class ShortenedURL:
             {HTML_PAGE_FOOTER}
 '''
         else:
-            if orig_url in self.url2id:
-                unencoded_id = self.url2id[orig_url]
+            if orig_url in ShortenedURL.url2id:
+                unencoded_id = ShortenedURL.url2id[orig_url]
                 encoded_id = self.encode(unencoded_id)
             else:
-                self.url2id[orig_url] = self.id
-                encoded_id = self.encode(self.id)
-                self.id2url[encoded_id] = {'url': orig_url, 'views': 0, 'accessed_time': datetime.now().isoformat()}
-                self.id += 1
+                ShortenedURL.url2id[orig_url] = ShortenedURL.id
+                encoded_id = self.encode(ShortenedURL.id)
+                ShortenedURL.id2url[encoded_id] = {'url': orig_url, 'views': 0, 'accessed_time': datetime.now().isoformat()}
+                ShortenedURL.id += 1
                 # save to disk
                 self.sync2disk()
 

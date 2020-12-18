@@ -20,4 +20,32 @@ Write a web application that allows users to take a long URL and convert it to a
 - [ ] Record the date and time each short URL was accessed, and use a graphing library to graph the requests.
 
 # Example:
+
 https://bit.ly/381YTZJ will redirect user to this repo
+
+# Implementation
+
+## Framework
+To better support API, I used the Python Falcon framework, which is a lightweight Web Framework. [Link](https://falcon.readthedocs.io/en/stable/)
+
+## Package Requirements
+In order to run the application, you need to install additional packages from pip. The required packages are listed in the `requirements.txt`.
+
+To install them, do the following step.
+```buildoutcfg
+pip install -r requirements.txt
+```
+
+## Start the application
+We need `gunicorn` program to start the application, the following step is to start it.
+```buildoutcfg
+gunicorn -b 0.0.0.0 --timeout 1200 --log-level debug --reload "src.shortened_url:get_app()"
+```
+The application will run on 0.0.0.0 and default port 8000.
+
+Then you just open the browser and enter following address.
+```
+http://localhost:8000
+```
+
+## Implementation Details
