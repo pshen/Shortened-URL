@@ -1,0 +1,6 @@
+PyYAML
+falcon
+falcon-cors
+gunicorn
+requests
+validators

@@ -44,8 +44,23 @@ gunicorn -b 0.0.0.0 --timeout 1200 --log-level debug --reload "src.shortened_url
 The application will run on 0.0.0.0 and default port 8000.
 
 Then you just open the browser and enter following address.
-```
+```buildoutcfg
 http://localhost:8000
 ```
 
+To use the shortened url and be redirected to real url, enter the following address in the browser.
+```buildoutcfg
+http://localhost:8000/4c9d
+```
+
+To see the statistics of this shortened url, enter the following address
+```buildoutcfg
+http://localhost:8000/4c9d/stats
+```
+
 ## Implementation Details
+- Programming Language: Python
+- Web Framework: Falcon
+- Data Structure: Dict(Hashmap)
+- Time Complexity: O(1), because I'm using Dict for storing the shortened url to real url mapping, and the vice versa.
+- Backend Storage: The mapping data is currently stored to a json file, ideally it could be stored into a NOSQL db.
