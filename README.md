@@ -67,4 +67,4 @@ http://localhost:8000/4c9d/stats
 
 ## How I convert a real url to a shortened url
 - Internally I keep tracking an id, so each real url corresponds to a unique id.
-- In order to make the id shorter to be presented in the url. The 10-based numeric id is converted 62-based alphanumeric id, please see `ShortenedURL.encode` function.
+- In order to make the id shorter to be presented in the url. The 10-based numeric id is converted to a 62-based alphanumeric id, please check `ShortenedURL.encode` function for more details.
