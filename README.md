@@ -58,9 +58,13 @@ To see the statistics of this shortened url, enter the following address
 http://localhost:8000/4c9d/stats
 ```
 
-## Implementation Details
+## Details
 - Programming Language: Python
 - Web Framework: Falcon
 - Data Structure: Dict(Hashmap)
 - Time Complexity: O(1), because I'm using Dict for storing the shortened url to real url mapping, and the vice versa.
 - Backend Storage: The mapping data is currently stored to a json file, ideally it could be stored into a NOSQL db.
+
+## How I convert a real url to a shortened url
+- Internally I keep tracking an id, so each real url corresponds to a unique id.
+- In order to make the id shorter to be presented in the url. The 10-based numeric id is converted 62-based alphanumeric id, please see `ShortenedURL.encode` function.
